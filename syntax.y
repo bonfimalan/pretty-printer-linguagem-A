@@ -1,7 +1,6 @@
 %{
     #include <stdio.h>
     #include <stdlib.h>
-    #include "syntax.tab.h"
     
     int yylex();
     int yyparse();
@@ -52,7 +51,7 @@ block:
 ;
 
 const:
-    T_CON T_IDE T_EQU T_NUM T_SCO                   {}
+    T_CON T_IDE T_EQU T_NUM T_SCO                   {printf("%d", $1);}
   | T_CON T_IDE T_EQU T_NUM const_identifier T_SCO  {}
 ;
 
@@ -117,23 +116,10 @@ final:
 
 void yyerror(const char* s)
 {
-    printf(s);
+    printf("%s\n", s);
 }
 
-int main()
+int main(int argc, char *argv[])
 {
     return yyparse();
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
