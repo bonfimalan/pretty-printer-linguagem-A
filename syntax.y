@@ -1,10 +1,15 @@
 %{
     #include <stdio.h>
     #include <stdlib.h>
+    #include "linkedlist.h"
     
     int yylex();
     int yyparse();
     void yyerror(const char*);
+    void process_const(char*);
+    void process_var(char*);
+
+    char* identifier;
     
     /* #define YYSTYPE <type> */
 %}
@@ -40,7 +45,7 @@
 %%
 
 program:
-    block T_DOT {}
+    block T_DOT {exit(0);}
 ;
 
 block:
@@ -51,27 +56,35 @@ block:
 ;
 
 const:
-    T_CON T_IDE T_EQU T_NUM T_SCO                   {printf("%d", $1);}
-  | T_CON T_IDE T_EQU T_NUM const_identifier T_SCO  {}
+    T_CON T_IDE T_EQU T_NUM T_SCO                   {process_const(identifier);}
+  | T_CON T_IDE T_EQU T_NUM const_identifier T_SCO  {process_const(identifier);}
 ;
 
 const_identifier:
-    T_COL T_IDE T_EQU T_NUM                     {}
-  | const_identifier T_COL T_IDE T_EQU T_NUM    {}
+    T_COL T_IDE T_EQU T_NUM                     {process_const(identifier);}
+  | const_identifier T_COL T_IDE T_EQU T_NUM    {process_const(identifier);}
 ;
 
 var:
-    T_VAR T_IDE T_SCO                   {}
-  | T_VAR T_IDE var_identifier T_SCO    {}
+    T_VAR T_IDE T_SCO                   {process_var(identifier);}
+  | T_VAR T_IDE var_identifier T_SCO    {process_var(identifier);}
 ;
 
 var_identifier:
-    T_COL T_IDE                     {}
-  | var_identifier T_COL T_IDE      {}
+    T_COL T_IDE                     {process_var(identifier);}
+  | var_identifier T_COL T_IDE      {process_var(identifier);}
 ;
 
 statement:
-    T_IDE T_ATR expression          {}
+    T_IDE T_ATR expression          {
+      struct node* pointer = find_id(identifier);
+      if(pointer == NULL) {
+        yyerror("Variavel nao declarada!");
+      }
+      if(pointer->isConst == 1) {
+        yyerror("Nao pode mudar o valor de uma constante");
+      }
+    }
   | T_BEG statement T_END           {}
   | T_SCO statement                 {}
   | T_IF condition T_THE statement  {}
@@ -117,7 +130,26 @@ final:
 void yyerror(const char* s)
 {
     printf("%s\n", s);
+    exit(1);
 }
+
+void process_const(char*)
+{
+    struct node* pointer = find_id(identifier);
+    if(pointer != NULL) {
+        yyerror("Constante já declarada!");
+    }
+    insert_id(identifier, 1);
+}
+
+void process_var(char*)
+{
+    struct node* pointer = find_id(identifier);
+    if(pointer != NULL) {
+        yyerror("Identificador já declarado!");
+    }
+    insert_id(identifier, 0);
+}    
 
 int main(int argc, char *argv[])
 {
