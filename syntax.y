@@ -14,33 +14,34 @@
     /* #define YYSTYPE <type> */
 %}
 
-%token T_VAR 
-%token T_CON 
-%token T_BEG 
-%token T_END 
-%token T_IF 
-%token T_THE 
-%token T_WHI
-%token T_DO 
-%token T_PRI
-%token T_EQU
-%token T_DIF
-%token T_GT
-%token T_GTE
-%token T_ST
-%token T_STE
-%token T_ATR
-%token T_SUM
-%token T_SUB
-%token T_MUT
-%token T_DIV
-%token T_OPE
-%token T_CLO
-%token T_SCO
-%token T_COL
-%token T_DOT
-%token T_NUM
-%token T_IDE
+/* DECLARAÇÃO DOS TOKENS DA LINGUAGEM*/
+%token T_VAR    // VAR
+%token T_CON    // CONST
+%token T_BEG    // BEGIN
+%token T_END    // END
+%token T_IF     // IF
+%token T_THE    // THEN
+%token T_WHI    // WHILE
+%token T_DO     // DO
+%token T_PRI    // PRINT
+%token T_EQU    // =
+%token T_DIF    // #
+%token T_GT     // >
+%token T_GTE    // >=
+%token T_ST     // <
+%token T_STE    // <=
+%token T_ATR    // :=
+%token T_SUM    // +
+%token T_SUB    // -
+%token T_MUT    // *
+%token T_DIV    // /
+%token T_OPE    // (
+%token T_CLO    // )
+%token T_SCO    // ;
+%token T_COL    // ,
+%token T_DOT    // .
+%token T_NUM    // Sequência de um ou mais dígitos numéricos precedido ou não pelo sinal negativo.
+%token T_IDE    // sequência de zero ou mais letras ou dígitos numéricos precedida por uma letra.
 
 %%
 
@@ -77,13 +78,18 @@ var_identifier:
 
 statement:
     T_IDE T_ATR expression          {
-      struct node* pointer = find_id(identifier);
-      if(pointer == NULL) {
-        yyerror("Variavel nao declarada!");
-      }
-      if(pointer->isConst == 1) {
-        yyerror("Nao pode mudar o valor de uma constante");
-      }
+        // pesquisa o char* na tabela de símbolos (linkedlist.h)
+        struct node* pointer = find_id(identifier);
+        // caso não tenha encontrado, ou seja, o identificador não foi
+        // declarado
+        if(pointer == NULL) {
+            yyerror("Variavel nao declarada!");
+        }
+        // caso o identificador seja uma constante, ou seja, não pode
+        // ter seu valor reescrito
+        if(pointer->isConst == 1) {
+            yyerror("Nao pode mudar o valor de uma constante");
+        }
     }
   | T_BEG statement T_END           {}
   | T_SCO statement                 {}
@@ -133,6 +139,14 @@ void yyerror(const char* s)
     exit(1);
 }
 
+/*
+    Usada nas regras const e const_identifier
+
+    Função: verifica se o identificador já foi declarado,
+            fazendo uma pesquisa na tabela de símbolos,
+            caso tenha sido encontrado chama a função yyerror
+            indicando um erro semântico
+*/
 void process_const(char*)
 {
     struct node* pointer = find_id(identifier);
@@ -142,6 +156,14 @@ void process_const(char*)
     insert_id(identifier, 1);
 }
 
+/*
+    Usada nas regras var e var_identifier
+
+    Função: verifica se o identificador já foi declarado,
+            fazendo uma pesquisa na tabela de símbolos,
+            caso tenha sido encontrado chama a função yyerror
+            indicando um erro semântico
+*/
 void process_var(char*)
 {
     struct node* pointer = find_id(identifier);

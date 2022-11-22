@@ -3,80 +3,81 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-struct node {
-   char* id;
-   int isConst;
-   struct node *next;
+struct node
+{
+	char *id;			// identificador
+	int isConst;		// 1 caso constante/0 caso variavel
+	struct node *next;	// ponteiro para o próximo nó a lista
 };
 
-struct node *head = NULL;
-struct node *current = NULL;
+struct node *head = NULL;		// ponteiro para o inicio da lista
+struct node *current = NULL;	// ponteiro utilizado em pesquisas
 
-//display the list
-void printList() {
-   struct node *ptr = head;
-   printf("\n[ ");
-	
-   //start from the beginning
-   while(ptr != NULL) {
-      printf("(%s,%d) ",ptr->id,ptr->isConst);
-      ptr = ptr->next;
-   }
-	
-   printf(" ]");
+// insere um símbolo na tabela de símbolos, recebendo o identificador, 1 caso constante ou 0 caso variavel
+void insert_id(char *id, int isConst)
+{
+	// cria um novo nó
+	struct node *link = (struct node *)malloc(sizeof(struct node));
+
+	link->id = id;
+	link->isConst = isConst;
+
+	// o novo nó é colocado no inicio da lista
+	link->next = head;
+
+	// o ponteiro head passa a apontar para o o novo nó
+	head = link;
 }
 
-//insert link at the first location
-void insert_id(char* id, int isConst) {
-   //create a link
-   struct node *link = (struct node*) malloc(sizeof(struct node));
-	
-   link->id = id;
-   link->isConst = isConst;
-	
-   //point it to old first node
-   link->next = head;
-	
-   //point first to new first node
-   head = link;
+// compara duas strings, retorna 1 se forem iguais ou 0 se forem diferentes
+int compare(char *a, char *b)
+{
+	if (strlen(a) != strlen(b))
+	{
+		return 0;
+	}
+
+	for (int i = 0; i < strlen(a); i++)
+	{
+		if (a[i] != b[i])
+			return 0;
+	}
+
+	return 1;
 }
 
-int compare(char* a, char* b) {
-  if(strlen(a) != strlen(b)) {
-    return 0;
-  }
-  
-  for(int i = 0; i < strlen(a); i++) {
-    if(a[i] != b[i]) 
-      return 0;
-  }
+/*
+	Busca um símbolo na tabela, recebendo um identificador como parâmetro.
+	Retorna NULL caso o identificador não esteja na tabela
+ */
+struct node *find_id(char *idSearch)
+{
 
-  return 1;
-}
+	// começa pelo inicio da lista
+	struct node *current = head;
 
-//find a link with given key
-struct node* find_id(char* idSearch) {
+	// se a lista for vazia
+	if (head == NULL)
+	{
+		return NULL;
+	}
 
-   //start from the first link
-   struct node* current = head;
+	// navega pela lista
+	while (compare(current->id, idSearch) != 1)
+	{
 
-   //if list is empty
-   if(head == NULL) {
-      return NULL;
-   }
+		// se for o último node, ou seja, percorreu a lista toda e não encontrou o identificador
+		if (current->next == NULL)
+		{
+			return NULL;
+		}
+		else
+		{
+			// vai para o próximo nó
+			current = current->next;
+		}
+	}
 
-   //navigate through list
-   while(compare(current->id, idSearch) != 1) {
-	
-      //if it is last node
-      if(current->next == NULL) {
-         return NULL;
-      } else {
-         //go to next link
-         current = current->next;
-      }
-   }      
-	
-   //if data found, return the current Link
-   return current;
+	// retorna o nó, caso tenha sido encontrado
+	return current;
 }

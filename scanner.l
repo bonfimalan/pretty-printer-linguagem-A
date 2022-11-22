@@ -39,14 +39,17 @@ ide (({letter})({letter}|{digit})*)
 {num}    {return T_NUM;}
 {ide}    {
     int cont = 0;
+    // percorre até encontrar o fim do identificador, que será sempre precedido por um desses cinco caracteres
     while(yytext[cont] != '=' && yytext[cont] != ':' && yytext[cont] != ';' && yytext[cont] != ',' && yytext[cont] != ' ') {
         cont++;
     }
-
+    // aloca dinâmicamente um espaço com o memso tamanho que o identificador
     char* pointer = (char*) calloc(cont, sizeof(char));
+    // copia o valor do identificador para a variavel criada anteriormente
     for(int i=0; i<cont; i++) {
         pointer[i] = yytext[i];
     }
+    // atribue o valor do identificador para a variavel externa
     identifier = pointer; 
     return T_IDE;
 }
